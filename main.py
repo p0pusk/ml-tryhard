@@ -16,12 +16,20 @@ import warnings
 import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import KFold
+from feature_extractor import feature_extractor
 
-from model import model_build
+from model import model_build, ModelType
 
 
 if __name__ == "__main__":
     split = KFold(n_splits=5, shuffle=True)
-    rfc = RandomForestClassifier(n_estimators=1000, max_depth=10, random_state=10)
 
-    model_build(rfc, split, "RandomForestClassifier")
+    model = model_build(ModelType.KNN, split)
+
+    with open("./Data/genres_original/hiphop/hiphop.00003.wav", "r") as file:
+        features = feature_extractor(file)
+
+    pred = model.predict(features)
+    prob = model.predict_proba(features)
+    print(f"Model prediction: {pred}")
+    print(f"Probability: {prob}")

@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
+from enum import Enum
 from sklearn.ensemble import RandomForestClassifier
 import pickle
 from sklearn.neighbors import KNeighborsClassifier
@@ -20,18 +21,37 @@ from sklearn.metrics import (
 )
 from sklearn.feature_selection import RFE
 
+from feature_extractor import feature_extractor
 
-def model_build(model, kf, title="Default"):
+
+class ModelType(Enum):
+    RFC = 1
+    KNN = 2
+    SVM = 3
+
+
+def model_build(type: ModelType, kf):
+    if type == ModelType.RFC:
+        title = "RandomForest"
+        model = RandomForestClassifier(n_estimators=1000, max_depth=10, random_state=10)
+    elif type == ModelType.KNN:
+        title = "KNearestNeighbot"
+        model = KNeighborsClassifier(n_neighbors=10)
+    elif type == ModelType.SVM:
+        title = "SupportVectorMachine"
+        model = SVC(decision_function_shape="ovo")
+
     model_pkl_file = f"{title}_classifier_model.pkl"
     if os.path.isfile(model_pkl_file):
         with open(model_pkl_file, "rb") as file:
             model = pickle.load(file)
             print("model already build, reading from file")
-            return
+            return model
 
     data = pd.read_csv("./Data/features_3_sec.csv")
     df = data.iloc[0:, 2:]
     y = df.label.values
+    print(y)
     X = df.drop("label", axis=1)
     X_columns = X.columns
     scale = MinMaxScaler()
@@ -55,3 +75,4 @@ def model_build(model, kf, title="Default"):
         print("Model saved to: ", model_pkl_file)
 
     print("Accuracy score of", title, "is:", round(np.mean(accuracy_scores), 2))
+    return model
