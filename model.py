@@ -59,6 +59,7 @@ def model_build(type: ModelType, kf, rebuild=False):
     X = pd.DataFrame(scaled_data, columns=X_columns).values
 
     accuracy_scores = []
+    precision_scores = []
 
     for train_index, test_index in kf.split(X):
         X_train, X_test = X[train_index], X[test_index]
@@ -66,10 +67,12 @@ def model_build(type: ModelType, kf, rebuild=False):
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
         accuracy_scores.append(accuracy_score(y_test, y_pred))
+        precision_scores.append(precision_score(y_test, y_pred, average=None))
 
     with open(model_pkl_file, "wb") as file:
         pickle.dump(model, file)
         print("Model saved to: ", model_pkl_file)
 
     print("Accuracy score of", title, "is:", round(np.mean(accuracy_scores), 2))
+    print("Precision score of", title, "is:", round(np.mean(precision_scores), 2))
     return model
