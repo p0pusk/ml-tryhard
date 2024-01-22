@@ -30,7 +30,7 @@ class ModelType(Enum):
     SVM = 3
 
 
-def model_build(type: ModelType, kf):
+def model_build(type: ModelType, kf, rebuild=False):
     if type == ModelType.RFC:
         title = "RandomForest"
         model = RandomForestClassifier(n_estimators=1000, max_depth=10, random_state=10)
@@ -42,7 +42,7 @@ def model_build(type: ModelType, kf):
         model = SVC(decision_function_shape="ovo")
 
     model_pkl_file = f"{title}_classifier_model.pkl"
-    if os.path.isfile(model_pkl_file):
+    if os.path.isfile(model_pkl_file) and not rebuild:
         with open(model_pkl_file, "rb") as file:
             model = pickle.load(file)
             print("model already build, reading from file")
@@ -59,9 +59,6 @@ def model_build(type: ModelType, kf):
     X = pd.DataFrame(scaled_data, columns=X_columns).values
 
     accuracy_scores = []
-    precision_scores = []
-    recall_scores = []
-    f1_scores = []
 
     for train_index, test_index in kf.split(X):
         X_train, X_test = X[train_index], X[test_index]
